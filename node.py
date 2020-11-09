@@ -13,10 +13,14 @@ class  Node():
 
     def select(self):
         if len(self.children) == 0:
-            # create children & rollout
+            # create action children, first observation & rollout
             for action in len(self.simulator.allActions):
                 self.children[action] = Node(self.simulator, particles=0)
-            self.children[choice(self.simulator.allActions())].rollout()
+            action = choice(self.simulator.allActions())
+            update = self.simulator.generate(self.simulator.state, action)
+            self.children[action].children[update[1]] = Node(self.simulator, particles=0)
+            self.children[action].children[update[1]].rollout()
+            
 
         state, observation, reward = self.simulator.generate(choice(self.particles), choice(self.simulator.allActions()))
         print(state, observation, reward)
