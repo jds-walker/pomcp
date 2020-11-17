@@ -87,15 +87,9 @@ class  Node():
     def act(self):
 
         maxV = max(self.children, key=lambda n: self.children[n].V)
-
         state, observation, reward = self.simulator.generate(self.actual_state, maxV)
-        print(maxV)
-        print(observation)
-        print(reward)
         new_tree = self.children[maxV].children[observation]
-        
         new_tree.actual_state = state
 
-
-        return self.children[maxV].children[observation]
+        return (self.children[maxV].children[observation], reward)
                 

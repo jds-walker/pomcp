@@ -4,14 +4,17 @@ from node import Node
 tiger = Tiger()
 tree = Node(tiger, actual_state=tiger.startState())
 
+rewards = 0
+for i in range(100):
 
-for i in range(10):
     # train 
-    for _ in range(600):
+    for _ in range(1200):
         tree.select()
 
     # actual act
-    print(i)
-    tree = tree.act()
+    tree, reward = tree.act()
+    print(reward)
+    rewards = rewards + reward
 
 
+print(f"total rewarads {rewards}")
