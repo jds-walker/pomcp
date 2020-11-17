@@ -2,12 +2,16 @@ from tiger import Tiger
 from node import Node
 
 tiger = Tiger()
-tree = Node(tiger)
+tree = Node(tiger, actual_state=tiger.startState())
 
-for _ in range(600):
-    tree.select()
 
-tree.select()
+for i in range(10):
+    # train 
+    for _ in range(600):
+        tree.select()
 
-print(tree.V)
-print(tree.N)
+    # actual act
+    print(i)
+    tree = tree.act()
+
+

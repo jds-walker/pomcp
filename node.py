@@ -5,8 +5,9 @@ from math import sqrt, log
 
 class  Node():
     
-    def __init__(self, simulator: Simulator, particles: int = 1200, T = 0, gamma = .75, c = 40):
+    def __init__(self, simulator: Simulator, actual_state = None, particles: int = 1200, T = 0, gamma = .75, c = 100):
         self.simulator = simulator
+        self.actual_state = actual_state
         self.particles = [simulator.startState() for _ in range(particles)] # belief state
         self.N = 0 # number of visits
         self.V = 0 # average value of rewards
@@ -31,6 +32,8 @@ class  Node():
         smallestNkey = min(self.children, key=lambda n: self.children[n].N)
         smallestN = self.children[smallestNkey].N
         if smallestN == 0: # explore unexplored actions
+            smallestkeys = [k for k,v in self.children.items() if v.V == smallestN]
+            smallestNkey = choice(smallestkeys)
             s, o, r = self.simulator.generate(self.simulator.state, smallestNkey)
 
             self.children[smallestNkey].children[o] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma)
@@ -70,17 +73,6 @@ class  Node():
 
             return reward
 
-
-        
-
-
-
-    # def UCT(self:
-    #     # observation -> action 
-    #     # c x root(log(N(state))/N(state, action))
-    #     pass
-
-
     def rollout(self, steps = 10):
 
         rewards = 0
@@ -91,4 +83,19 @@ class  Node():
             rewards += (reward * discount)
 
         return rewards
+
+    def act(self):
+
+        maxV = max(self.children, key=lambda n: self.children[n].V)
+
+        state, observation, reward = self.simulator.generate(self.actual_state, maxV)
+        print(maxV)
+        print(observation)
+        print(reward)
+        new_tree = self.children[maxV].children[observation]
         
+        new_tree.actual_state = state
+
+
+        return self.children[maxV].children[observation]
+                
