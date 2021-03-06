@@ -1,6 +1,7 @@
 import yaml
 from enum import Enum
 from simulator import Simulator
+from random import choice
 
 class Parser(): 
 
@@ -11,10 +12,11 @@ class Parser():
         with open(self.scenario) as stream:
             documents = yaml.safe_load(stream)
 
-            States = Enum('States', {k : {k : {a : b for a, b in v.items()}} for k, v in documents['state_space'].items()})
+            States = Enum('States', {k : {k : v} for k, v in documents['state_space'].items()})
 
-            for state in States:
-                print(state.name)
+
+            states = {state.name : state.value[state.name]['initial_value'] if state.value[state.name]['initial_value'] in state.value[state.name]['values'] else choice(state.value[state.name]['values']) for state in States}
+            print(states)
 
             # States = Enum('States', )
 
@@ -27,15 +29,16 @@ class Parser():
 
     
 
-    # class Scenario(Simulator):
+    class Scenario(Simulator):
 
-    #     action = None
-    #     observation = None
-    #     state = None
-    #     reward = None
+        action = None
+        observation = None
+        state = None
+        reward = None
 
-    #     def startState(self):
-    #         return choice([State.TIGERLEFT, State.TIGERRIGHT])
+        # def startState(self):
+        #     state = {k : v for k, v in States.items()}
+        #     return choice([State.TIGERLEFT, State.TIGERRIGHT])
 
     #     def allActions(self) -> [Action]:
     #         return [Action.LISTEN, Action.OPENLEFT, Action.OPENRIGHT]
