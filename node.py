@@ -88,8 +88,17 @@ class  Node():
 
         maxV = max(self.children, key=lambda n: self.children[n].V)
         state, observation, reward = self.simulator.generate(self.actual_state, maxV)
-        new_tree = self.children[maxV].children[observation]
-        new_tree.actual_state = state
+
+        if observation in self.children[maxV].children.keys():
+
+            new_tree = self.children[maxV].children[observation]
+            new_tree.actual_state = state
+
+        #TODO: implement a node if the observation was never in the 
+
+        # else: 
+
+        #     new_tree = Node(self.simulator, actual_state=state, )
 
         return (self.children[maxV].children[observation], reward)
                 

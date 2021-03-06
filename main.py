@@ -12,6 +12,8 @@ for i in range(100):
         tree.select()
 
     # actual act
+    # particle update is done as part of the real step. 
+    # Get next belief (function) take current particles - get action and observation -> from there generate next set of particles
     tree, reward = tree.act()
     print(reward)
     rewards = rewards + reward
