@@ -1,3 +1,0 @@
-take icaps paper and do first scenario - pentesting in our online pomdp sovler
-
-- ignore information decay for now. 
