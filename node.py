@@ -18,6 +18,7 @@ class  Node():
 
     def select(self):
 
+
         self.simulator.state = choice(self.particles)        
         self.V = self.simulate() + (self.V * self.N)/(self.N+1)
         self.N += 1
@@ -86,19 +87,24 @@ class  Node():
 
     def act(self):
 
+        new_tree = None
         maxV = max(self.children, key=lambda n: self.children[n].V)
-        state, observation, reward = self.simulator.generate(self.actual_state, maxV)
+        print(maxV)
+        real_state, real_observation, real_reward = self.simulator.generate(self.actual_state, maxV)
 
-        if observation in self.children[maxV].children.keys():
+        if real_observation in self.children[maxV].children.keys():
+            new_tree = self.children[maxV].children[real_observation]
+            new_tree.actual_state = real_state
 
-            new_tree = self.children[maxV].children[observation]
-            new_tree.actual_state = state
+        else: 
+            new_tree = Node(self.simulator, actual_state=real_state, particles=0, T=self.T, gamma=self.gamma,c=self.c)
+            self.children[real_observation] = new_tree
 
-        #TODO: implement a node if the observation was never in the 
+        while len(new_tree.particles) < 1000:
+            rand_state = choice(self.particles)
+            state, observation, reward = self.simulator.generate(rand_state, maxV)
+            if observation == real_observation:
+                new_tree.particles.append(state) 
 
-        # else: 
-
-        #     new_tree = Node(self.simulator, actual_state=state, )
-
-        return (self.children[maxV].children[observation], reward)
+        return (self.children[maxV].children[real_observation], real_reward)
                 
