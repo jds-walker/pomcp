@@ -5,41 +5,71 @@ import logging
 from datetime import datetime
 
 def main():
-    logging.basicConfig(filename="./logging/" + str(datetime.now()) + '.txt')
+    logging.basicConfig(filename="./logs/" + str(datetime.now()) + '.txt', level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-    seed = random.rand()
-    logging.warning('seed', seed)
-    random.seed(seed)
+    discounted_rewards = {}
 
-    scenario = Scenario('./scenario/es1_red_d.yaml')
+    for c in range(100, 2000, 100):
 
-    tree = Node(scenario, actual_state=scenario.startState(), particles=5000, gamma=.9, c=1000)
+        logging.debug('c: %s', c)
+        discounted_rewards[c] = {'rewards': [], 'errors': []}
+        
+        for _ in range(100):
 
+            seed = random.random()
+            # error_seed = 0.6298475305903174 # c = 1000
+            logging.debug('seed: %s', seed)
+            random.seed(seed)
 
-    rewards = 0
-    while tree.actual_state['terminal'] == False:
+            scenario = Scenario('./scenario/es1_red_d.yaml')
 
-
-
-        # train 
-        for _ in range(2000):
-            tree.select()
-
-        # actual act
-        # particle update is done as part of the real step. 
-        # Get next belief (function) take current particles - get action and observation -> from there generate next set of particles
-        tree, reward = tree.act()
-        print(reward)
-        rewards = rewards + reward
+            actual_state = scenario.startState()
+            particles = 5000
+            gamma = 0.9
+            train = 2000
 
 
-    # Get average over at least 100 runs (average - total discounted reward - 95% confidence interval)
-    # Hyperparameters (c = 100, 200, ... , 1000)
-    # keep logs of every state / action 
-    # set random seed in one place that makes the scenario determinstic (e.g time(now)) - random until we want to check
-    # Generate new belief state when no real observation in tree. 
+            logging.debug('actual start state: %s, particles: %s, gamma: %s, c: %s, train: %s', actual_state, particles, gamma, c, train)
 
-    print(f"total rewarads {rewards}")
+            tree = Node(scenario, actual_state=actual_state, particles=particles, gamma=gamma, c=c)
+
+            rewards = 0
+
+            while tree.actual_state['terminal'] == False:
+
+                # train
+                try: 
+                    for _ in range(2000):
+                        tree.select()
+                except Exception: 
+                    logging.debug('training exception: %s', Exception)
+                    discounted_rewards[c]['errors'].append(seed)
+                    break
+
+                # actual act
+                # particle update is done as part of the real step. 
+                # Get next belief (function) take current particles - get action and observation -> from there generate next set of particles
+                try:
+                    tree, reward = tree.act()
+                    print(round(reward,2))
+                    rewards = rewards + reward
+                except Exception:  
+                    logging.debug('real action exception: %s', Exception)
+                    discounted_rewards[c]['errors'].append(seed)
+                    break
+                
+
+            # Get average over at least 100 runs (average - total discounted reward - 95% confidence interval)
+            # Hyperparameters (c = 100, 200, ... , 1000)
+            # keep logs of every state / action 
+            # set random seed in one place that makes the scenario determinstic (e.g time(now)) - random until we want to check
+            # Generate new belief state when no real observation in tree. 
+
+            print(f"total rewards {rewards}")
+            discounted_rewards[c]['rewards'].append(rewards)
+        logging.debug(discounted_rewards)
+        print(discounted_rewards)
+        
 
 if __name__ ==  '__main__':
     main()

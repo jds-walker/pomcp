@@ -1,6 +1,7 @@
 from simulator import Simulator
 from random import choice
 from math import sqrt, log
+import logging
 
 
 class  Node():
@@ -89,22 +90,32 @@ class  Node():
 
         new_tree = None
         maxV = max(self.children, key=lambda n: self.children[n].V)
-        print(maxV)
+        logging.debug("best action: %s", maxV)
+
         real_state, real_observation, real_reward = self.simulator.generate(self.actual_state, maxV)
+        real_discounted_reward = real_reward*self.gamma**self.T
+
+        logging.debug("real - reward, observation, state : %s, %s, %s", real_reward, real_observation, real_state)
 
         if real_observation in self.children[maxV].children.keys():
             new_tree = self.children[maxV].children[real_observation]
             new_tree.actual_state = real_state
 
         else: 
-            new_tree = Node(self.simulator, actual_state=real_state, particles=0, T=self.T, gamma=self.gamma,c=self.c)
+            new_tree = Node(self.simulator, actual_state=real_state, particles=0, T=self.T+1, gamma=self.gamma,c=self.c)
             self.children[real_observation] = new_tree
 
+        count = 0 
+        alerted = False
         while len(new_tree.particles) < 1000:
             rand_state = choice(self.particles)
             state, observation, reward = self.simulator.generate(rand_state, maxV)
             if observation == real_observation:
                 new_tree.particles.append(state) 
+            count += 1
+            if count > 10000 and alerted == False:
+                logging.warn('loop > 10000 to pad particles')
+                alerted = True
 
-        return (self.children[maxV].children[real_observation], real_reward)
+        return (self.children[maxV].children[real_observation], real_discounted_reward)
                 
