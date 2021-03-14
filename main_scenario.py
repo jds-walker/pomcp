@@ -9,15 +9,16 @@ def main():
 
     discounted_rewards = {}
 
-    for c in range(100, 2000, 100):
+    for c in range(100, 1000, 100):
 
         logging.debug('c: %s', c)
         discounted_rewards[c] = {'rewards': [], 'errors': []}
         
-        for _ in range(100):
+        for _ in range(25):
 
             seed = random.random()
-            # error_seed = 0.6298475305903174 # c = 1000
+            # seed = 0.6298475305903174 #error_seed c = 1000
+            # seed = 0.5738201070552149 # error_seed c = 100
             logging.debug('seed: %s', seed)
             random.seed(seed)
 

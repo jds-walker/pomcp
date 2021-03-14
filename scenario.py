@@ -54,11 +54,27 @@ class Scenario(Simulator):
                 state['terminal'] = True
                 cost -= self.Terminal.exploited.value['exploited']['reward']
             
-            if observation == {}:
+            if len(observation) == 0:
                 observation = "No-Observation"
             else: 
-                obs = [j+k for j, k in observation.items()]
-                observation = '-'.join(obs)
+                # observation_space:
+                #     non_state_obs:
+                #         port_obs: &id001
+                #         - open
+                #         - closed
+                #     state_obs:
+                #     - os
+
+                for o in observation:
+
+                    try:
+                        if observation[o] == "actual":
+                            observation = state[o]
+                        else:
+                            state[o]
+                            observation = "No-Observation"
+                    except:
+                        observation = action + observation[o]
             
             return (state, observation, -cost)
 
