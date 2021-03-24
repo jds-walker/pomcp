@@ -74,7 +74,7 @@ class Scenario(Simulator):
                             state[o]
                             observation = "No-Observation"
                     except:
-                        observation = action + observation[o]
+                        observation = action + "_" + observation[o]
             
             return (state, observation, -cost)
 

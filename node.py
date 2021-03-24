@@ -29,7 +29,7 @@ class  Node():
         
         if len(self.children) == 0: # create action children
             for action in self.simulator.allActions():
-                self.children[action] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma)
+                self.children[action] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma, c = self.c)
 
         smallestNkey = min(self.children, key=lambda n: self.children[n].N)
         smallestN = self.children[smallestNkey].N
@@ -38,7 +38,7 @@ class  Node():
             smallestNkey = choice(smallestkeys)
             s, o, r = self.simulator.generate(self.simulator.state, smallestNkey)
 
-            self.children[smallestNkey].children[o] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma)
+            self.children[smallestNkey].children[o] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma, c = self.c)
             
             rollout_reward = self.children[smallestNkey].children[o].rollout()       
 
@@ -61,7 +61,7 @@ class  Node():
             self.simulator.state = s
 
             if o not in self.children[maxV].children: 
-                 self.children[maxV].children[o] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma)
+                 self.children[maxV].children[o] = Node(self.simulator, particles=0, T=self.T+1, gamma=self.gamma, c = self.c)
                 
 
             self.children[maxV].children[o].particles.append(s)
@@ -102,10 +102,10 @@ class  Node():
             new_tree.actual_state = real_state
 
         else: 
-            new_tree = Node(self.simulator, actual_state=real_state, particles=0, T=self.T+1, gamma=self.gamma,c=self.c)
+            new_tree = Node(self.simulator, actual_state=real_state, particles=0, T=self.T+1, gamma=self.gamma,c = self.c)
             self.children[real_observation] = new_tree
 
-        count = 0 
+        count = 1 
         alerted = False
         while len(new_tree.particles) < 1000:
             rand_state = choice(self.particles)
@@ -116,6 +116,11 @@ class  Node():
             if count > 10000 and alerted == False:
                 logging.warn('loop > 10000 to pad particles')
                 alerted = True
+
+            # Particle reinvigoration
+            if alerted == True and count % 10 == 0:
+                new_tree.particles.append(Simulator.startState())
+
 
         return (self.children[maxV].children[real_observation], real_discounted_reward)
                 
