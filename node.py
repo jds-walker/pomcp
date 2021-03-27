@@ -16,6 +16,7 @@ class  Node():
         self.gamma = gamma # discount factor 
         self.c = c # exploration factor
         self.children = dict()
+        
 
     def select(self):
 
@@ -103,7 +104,7 @@ class  Node():
 
         else: 
             new_tree = Node(self.simulator, actual_state=real_state, particles=0, T=self.T+1, gamma=self.gamma,c = self.c)
-            self.children[real_observation] = new_tree
+            self.children[maxV].children[real_observation] = new_tree
 
         count = 1 
         alerted = False
@@ -113,13 +114,13 @@ class  Node():
             if observation == real_observation:
                 new_tree.particles.append(state) 
             count += 1
-            if count > 10000 and alerted == False:
+            if count > 2000 and alerted == False:
                 logging.warn('loop > 10000 to pad particles')
                 alerted = True
 
             # Particle reinvigoration
             if alerted == True and count % 10 == 0:
-                new_tree.particles.append(Simulator.startState())
+                new_tree.particles.append(self.simulator.startState())
 
 
         return (self.children[maxV].children[real_observation], real_discounted_reward)
